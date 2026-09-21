@@ -32,13 +32,13 @@
       </nav>
       <div class="sidebar-spacer"></div>
       <div class="sidebar-note"><div class="note-art"><i></i><i></i></div><strong>Everything in its place.</strong><p>Keep your gear accounted for, from meeting rooms to the server rack.</p></div>
-      <div class="profile"><div class="avatar" id="avatar">AV</div><div class="profile-text"><strong id="profileName">Preview workspace</strong><small id="profileRole">Demo data</small></div><button class="logout hidden" id="logoutBtn" type="button" aria-label="Sign out" title="Sign out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></button></div>
+      <div class="profile"><div class="avatar" id="avatar">AV</div><div class="profile-text"><strong id="profileName">Preview workspace</strong><small id="profileRole">Local preview · unsaved</small></div><button class="logout hidden" id="logoutBtn" type="button" aria-label="Sign out" title="Sign out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></button></div>
     </aside>
     <main class="main">
       <header class="topbar"><button class="mobile-menu" id="menuBtn" aria-label="Open navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><div class="breadcrumb"><span>Workspace</span><span class="slash">/</span><strong id="breadcrumb">Overview</strong></div><div class="top-actions"><label class="top-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="globalSearch" type="search" placeholder="Search your equipment..." aria-label="Search your equipment" /></label><button class="primary" id="newBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg><span>Add equipment</span></button></div></header>
       <div class="content">
         <div class="page-top"><div><div class="eyebrow" id="pageEyebrow">THE CONTROL CENTER</div><h1 id="pageTitle">Equipment overview</h1><p id="pageDescription">A clearer picture of every asset in your workspace.</p></div><button class="outline" id="exportBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3h16v-3"/></svg><span>Export CSV</span></button></div>
-        <div class="preview-banner" id="previewBanner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.5"/></svg><span><strong>Preview mode.</strong> Explore sample AV & IT inventory. Changes are temporary until you connect Firebase.</span></div>
+        <div class="preview-banner" id="previewBanner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.5"/></svg><span><strong>Preview mode.</strong> Your inventory starts empty. Equipment added here is temporary until you connect Firebase.</span></div>
         <section class="hero" id="hero"><div class="hero-copy"><div class="hero-label">YOUR EQUIPMENT, ORGANIZED</div><h2>Know what you have.<br/><span>Know where it is.</span></h2><p>One thoughtful home for the tools that keep your workplace running. Track, assign, and maintain every piece of gear.</p></div><div class="hero-art" aria-hidden="true"><div class="orbit"></div><div class="orbit two"></div><div class="core"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 17h7M17.5 14v7"/></svg></div></div></section>
         <section class="metrics" id="metrics" aria-label="Inventory statistics"><div class="metric"><div class="metric-head"><span>Total assets</span><div class="metric-icon" id="metricIconTotal"></div></div><strong id="metricTotal">—</strong><small class="metric-foot">In your inventory</small></div><div class="metric"><div class="metric-head"><span>Available</span><div class="metric-icon" id="metricIconAvailable"></div></div><strong id="metricAvailable">—</strong><small class="metric-foot">Ready to be assigned</small></div><div class="metric"><div class="metric-head"><span>In use</span><div class="metric-icon" id="metricIconInUse"></div></div><strong id="metricInUse">—</strong><small class="metric-foot">Currently assigned / deployed</small></div><div class="metric"><div class="metric-head"><span>In repair</span><div class="metric-icon" id="metricIconRepair"></div></div><strong id="metricRepair">—</strong><small class="metric-foot">Needs your attention</small></div></section>
         <section id="categorySection"><div class="section-head"><div><h2>Browse by category</h2><p>Quick access to the equipment you need.</p></div></div><div class="category-grid" id="categoryGrid"></div></section>
@@ -66,8 +66,7 @@
   messagingSenderId: "57022391570",
   appId: "1:57022391570:web:3bbed9834594dd5cdf7fcb"
     };
-    // Keep false. Only set to true if you deliberately want to view sample data
-    // after adding a real Firebase config. Demo records never enter Firestore.
+    // Set true to preview an empty, temporary inventory without using Firebase.
     const FORCE_PREVIEW = false;
     const LIVE = !FORCE_PREVIEW && FIREBASE_CONFIG.apiKey !== 'PASTE_YOUR_API_KEY' && FIREBASE_CONFIG.projectId !== 'YOUR_PROJECT_ID';
     const $ = id => document.getElementById(id);
@@ -93,21 +92,8 @@
     const categoryIcon=c=>categoryClass(c) in iconPaths?categoryClass(c):'other';
     const statusClass=s=>String(s||'').toLowerCase().replace(/\s+/g,'-');
     const badge=s=>`<span class="badge ${statusClass(s)}">${escapeHTML(s)}</span>`;
-    const demo=[
-      {id:'demo1',name:'Sony A7 IV Camera',assetTag:'AV-00128',category:'Video',brand:'Sony',model:'ILCE-7M4',serial:'SNY-84K209',location:'Studio A',status:'In use',assignedTo:'Creative team',purchaseDate:'2025-02-14',warrantyDate:'2027-02-14',notes:'Includes 24–70 mm lens and two batteries.'},
-      {id:'demo2',name:'Shure SM7B Microphone',assetTag:'AV-00129',category:'Audio',brand:'Shure',model:'SM7B',serial:'SH-7112',location:'Podcast room',status:'Available',assignedTo:'',purchaseDate:'2025-06-03',warrantyDate:'2027-06-03',notes:'Stored with XLR cable and boom arm.'},
-      {id:'demo3',name:'MacBook Pro 16”',assetTag:'IT-00241',category:'Computers',brand:'Apple',model:'MacBook Pro 16-inch',serial:'MBP-91528',location:'Floor 2',status:'In use',assignedTo:'Alex Morgan',purchaseDate:'2025-10-12',warrantyDate:'2028-10-12',notes:'M4 Pro, 24 GB RAM, 1 TB SSD.'},
-      {id:'demo4',name:'UniFi Dream Machine',assetTag:'IT-00242',category:'Networking',brand:'Ubiquiti',model:'UDM-Pro',serial:'UBQ-53022',location:'Server room',status:'In use',assignedTo:'IT team',purchaseDate:'2024-08-03',warrantyDate:'2027-08-03',notes:'Core network gateway. Rack 2U.'},
-      {id:'demo5',name:'Blackmagic ATEM Mini Pro',assetTag:'AV-00130',category:'Video',brand:'Blackmagic Design',model:'ATEM Mini Pro',serial:'BM-00391',location:'Studio B',status:'Available',assignedTo:'',purchaseDate:'2025-03-22',warrantyDate:'2027-03-22',notes:'Four-input HDMI live switcher.'},
-      {id:'demo6',name:'Dell UltraSharp 27”',assetTag:'IT-00243',category:'Computers',brand:'Dell',model:'U2723QE',serial:'DL-28343',location:'Floor 1',status:'In use',assignedTo:'Jordan Lee',purchaseDate:'2024-12-09',warrantyDate:'2027-12-09',notes:'4K IPS USB-C monitor.'},
-      {id:'demo7',name:'RØDE Wireless GO II',assetTag:'AV-00131',category:'Audio',brand:'RØDE',model:'Wireless GO II',serial:'RD-71833',location:'Equipment closet',status:'In repair',assignedTo:'AV support',purchaseDate:'2024-05-16',warrantyDate:'2026-05-16',notes:'Transmitter B does not hold charge.'},
-      {id:'demo8',name:'Logitech Rally Bar',assetTag:'AV-00132',category:'Video',brand:'Logitech',model:'Rally Bar',serial:'LOG-42091',location:'Meeting room 3',status:'In use',assignedTo:'Meeting room 3',purchaseDate:'2025-01-13',warrantyDate:'2028-01-13',notes:'All-in-one video conferencing bar.'},
-      {id:'demo9',name:'Cisco CBS350 Switch',assetTag:'IT-00244',category:'Networking',brand:'Cisco',model:'CBS350-24P',serial:'CSC-91480',location:'Server room',status:'Available',assignedTo:'',purchaseDate:'2024-11-25',warrantyDate:'2027-11-25',notes:'24-port PoE managed switch.'},
-      {id:'demo10',name:'USB-C Docking Station',assetTag:'IT-00245',category:'Accessories',brand:'CalDigit',model:'TS4',serial:'CG-24118',location:'IT storage',status:'Available',assignedTo:'',purchaseDate:'2025-08-05',warrantyDate:'2027-08-05',notes:'Thunderbolt 4, 18 ports.'},
-      {id:'demo11',name:'Epson Meeting Projector',assetTag:'AV-00133',category:'Video',brand:'Epson',model:'EB-FH52',serial:'EPS-18820',location:'Meeting room 5',status:'In repair',assignedTo:'Facilities',purchaseDate:'2023-09-20',warrantyDate:'2026-09-20',notes:'Image flickers intermittently. Service requested.'},
-      {id:'demo12',name:'Sennheiser HD 280 Pro',assetTag:'AV-00134',category:'Audio',brand:'Sennheiser',model:'HD 280 Pro',serial:'SEN-73320',location:'Podcast room',status:'Available',assignedTo:'',purchaseDate:'2025-04-08',warrantyDate:'2027-04-08',notes:'Monitoring headphones.'}
-    ];
-    let items=LIVE?[]:demo.map(x=>({...x}));
+    // Start with no equipment; connected Firebase records load after sign-in.
+    let items=[];
     let view='overview',editingId=null,detailId=null,unsubscribe=null,api=null,session=null,toastTimeout=null,lastFocused=null;
     $('currentYear').textContent=new Date().getFullYear();
     $('metricIconTotal').innerHTML=icon('grid');$('metricIconAvailable').innerHTML=icon('check');$('metricIconInUse').innerHTML=icon('use');$('metricIconRepair').innerHTML=icon('repair');$('emptyIcon').innerHTML=icon('empty');
@@ -169,7 +155,7 @@
         }else{
           const existing=editingId?items.find(x=>x.id===editingId):null;
           if(existing)Object.assign(existing,record);
-          else items.push({id:'demo'+crypto.randomUUID(),...record});
+          else items.push({id:crypto.randomUUID(),...record});
           render();
         }
         const wasEditing=!!editingId;
